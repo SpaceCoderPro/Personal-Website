@@ -10,7 +10,7 @@
                 color-scheme: dark;
                 --background: black;
                 --foreground: black;
-                --muted: aliceblue
+                --muted: aliceblue;
                 --accent: royalblue;
             }
 
@@ -62,7 +62,7 @@
             body::before {
                 content: "🌏🛰️👽∞👾🚀🌕";
                 position: relative;
-                font-size: 9rem;
+                font-size: 8rem;
                 font-weight: 100;
                 font-style: normal;
                 filter: drop-shadow(0 0 24px rgba(125, 211, 252, 0.25));
@@ -115,9 +115,10 @@
 
             .column {
                 flex: 1;
+                padding: 16px;
                 border-style: solid;
-                border-width: 2px;
-                border-radius: 5px;
+                border-width: 1px;
+                border-radius: 10px;
                 border-color: var(--accent);
             }
         </style>
@@ -138,13 +139,20 @@
             <li>Some Python, can make Windows app/cmd apps</li>
             <li>Some HTML/CSS which I used to create this website...</li>
         </ul>
+        <h4><a href="https://github.com/SpaceCoderPro">View my GitHub profile</a></h4>
         <h2>My Projects</h2>
-        </div>
         <div class="row">
             <div class="column">
                 <h4> App Launcher </h4>
+                <img src="img.png" width=50%>
+                <p>Windows App Launcher, Very cool, Very Fast, Minimal....</p>
+                <a href="https://github.com/SpaceCoderPro/App-Launcher">View on Github</a>
             </div>
-            <div class="column">Right Div</div>
+            <div class="column">
+                <h4> Firefox Islands </h4>
+                <p>Opera tab islands but in Zen/any other Gecko based browsers.</p>
+                <a href="https://github.com/SpaceCoderPro/Firefox-Islands">View on Github</a>
+            </div>
         </div>
         <script>
             const canvas = document.querySelector(".dot-field");
