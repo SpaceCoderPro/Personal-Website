@@ -4,27 +4,204 @@
         <meta charset="UTF-8">
         <title>Samyak's Website</title>
         <style>
+            @import url("https://fonts.googleapis.com/css?family=Exo:100");
+
+            :root {
+                color-scheme: dark;
+                --background: #050816;
+                --foreground: #e5e7eb;
+                --muted: #9ca3af;
+                --accent: #7dd3fc;
+            }
+
+            .progress-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 4px;
+                width: 100%;
+                background: var(--accent);
+                transform-origin: 0 50%;
+                transform: scaleX(0);
+                animation: grow-progress linear;
+                animation-timeline: scroll();
+                z-index: 1;
+            }
+
+            @keyframes grow-progress {
+                to { transform: scaleX(1); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .progress-bar,
+                .dot-field { display: none; }
+            }
+
             body {
-                background-color: black;
+                box-sizing: border-box;
+                min-height: 100vh;
+                margin: 0;
+                padding: 2rem;
+                color: var(--foreground);
+                background-color: var(--background);
+                background-image: linear-gradient(135deg, #050816, #0f172a 55%, #111827);
+                font: 400 16px/1.5 Exo, system-ui, sans-serif;
+                font-weight: 100;
+                line-height: 1.5;
+                text-align: center;
             }
+
+            .dot-field {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            body::before {
+                content: "🌏🛰️👽∞👾🚀🌕";
+                position: relative;
+                font-size: 9rem;
+                font-weight: 100;
+                font-style: normal;
+                filter: drop-shadow(0 0 24px rgba(125, 211, 252, 0.25));
+                z-index: 1;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                position: relative;
+                font-weight: 200;
+                margin-top: 0;
+                color: #f8fafc;
+                text-shadow: 0 0 24px rgba(125, 211, 252, 0.18);
+                z-index: 1;
+            }
+
             h1 {
-                font-family: "Arial";
-                color: aliceblue;
+                font-size: 7rem;
             }
+
+            h2 {
+                font-size: 4rem;
+            }
+
+            h3 {
+                font-size: 3.5rem;
+            }
+
             p {
-                font-family: "Arial";
-                color: aliceblue;
+                position: relative;
+                font-size: 1.25rem;
+                font-weight: 150;
+                color: var(--muted);
+                z-index: 1;
+            }
+
+            ul {
+                position: relative;
+                font-size: 1.25rem;
+                color: var(--muted);
+                z-index: 1;
             }
         </style>
     </head>
     <body>
+        <div class="progress-bar"></div>
+        <canvas class="dot-field" aria-hidden="true"></canvas>
         <h1>Welcome to My Website</h1>
+        <h3>About Me</h3>
         <p>
             Hi!, I am Samyak, I am 14 years old.
             I study in Gems Legacy School in Class 9.
-            I know programming languages like C++ (like for arduino/esp-idf or similar),
-            some Python and some HTML/CSS. I can make hardware and software projects.
             I am interested in Space, Electronics, Opening Stuff, Programming, Puzzles...
         </p>
+        <h3>Programming Languages I know:</h3>
+        <ul>
+            <li>C++ (like for Arduino or esp-idf development I guess...</li>
+            <li>Some Python, can make Windows app/cmd apps</li>
+            <li>Some HTML/CSS which I used to create this website...</li>
+        </ul>
+        <h2>My Projects</h2>
+        <script>
+            const canvas = document.querySelector(".dot-field");
+            const context = canvas.getContext("2d");
+            const spacing = 72;
+            const dots = [];
+            const pointer = { x: -1000, y: -1000 };
+            let drift = 0;
+            let lastTime = performance.now();
+
+            function resizeCanvas() {
+                const ratio = window.devicePixelRatio || 1;
+                canvas.width = window.innerWidth * ratio;
+                canvas.height = window.innerHeight * ratio;
+                canvas.style.width = `${window.innerWidth}px`;
+                canvas.style.height = `${window.innerHeight}px`;
+                context.setTransform(ratio, 0, 0, ratio, 0, 0);
+                dots.length = 0;
+
+                for (let y = -spacing; y < window.innerHeight + spacing; y += spacing) {
+                    for (let x = -spacing; x < window.innerWidth + spacing; x += spacing) {
+                        dots.push({ x, y, currentX: x, currentY: y, velocityX: 0, velocityY: 0 });
+                    }
+                }
+            }
+
+            function animate(time) {
+                const elapsed = Math.min((time - lastTime) / 1000, 0.04);
+                lastTime = time;
+                const nextDrift = drift + elapsed * 14;
+                if (nextDrift >= spacing) {
+                    dots.forEach((dot) => {
+                        dot.x += spacing;
+                        dot.y += spacing;
+                    });
+                }
+                drift = nextDrift % spacing;
+                context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+                dots.forEach((dot, index) => {
+                    const baseX = dot.x + drift;
+                    const baseY = dot.y + drift;
+                    const distanceX = pointer.x - baseX;
+                    const distanceY = pointer.y - baseY;
+                    const distance = Math.hypot(distanceX, distanceY);
+                    const influence = Math.max(0, 1 - distance / 180);
+                    const targetX = baseX + distanceX * influence * 0.45;
+                    const targetY = baseY + distanceY * influence * 0.45;
+                    const spring = 34;
+                    const damping = 9;
+
+                    dot.velocityX += (targetX - dot.currentX) * spring * elapsed;
+                    dot.velocityY += (targetY - dot.currentY) * spring * elapsed;
+                    dot.velocityX *= Math.exp(-damping * elapsed);
+                    dot.velocityY *= Math.exp(-damping * elapsed);
+                    dot.currentX += dot.velocityX * elapsed;
+                    dot.currentY += dot.velocityY * elapsed;
+
+                    context.fillStyle = index % 2 ? "rgba(196, 181, 253, 0.3)" : "rgba(125, 211, 252, 0.48)";
+                    context.beginPath();
+                    context.arc(dot.currentX, dot.currentY, index % 2 ? 1.5 : 2, 0, Math.PI * 2);
+                    context.fill();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+            document.addEventListener("pointermove", (event) => {
+                pointer.x = event.clientX;
+                pointer.y = event.clientY;
+            });
+            document.addEventListener("pointerleave", () => {
+                pointer.x = -1000;
+                pointer.y = -1000;
+            });
+
+            resizeCanvas();
+            requestAnimationFrame(animate);
+        </script>
     </body>
 </html>
